@@ -1,31 +1,82 @@
-# CodeQL
+import hashlib
+import datetime
 
-This open source repository contains the standard CodeQL libraries and queries that power [GitHub Advanced Security](https://github.com/features/security/code) and the other application security products that [GitHub](https://github.com/features/security/) makes available to its customers worldwide.
+class DigitalBillOfExchange:
+    """
+    Класс, представляющий цифровой вексель.
+    """
 
-## How do I learn CodeQL and run queries?
+    def __init__(self, issuer, payee, amount, due_date):
+        """
+        Инициализация векселя.
+        :param issuer: Эмитент (выдавший вексель)
+        :param payee: Получатель (кому выплачиваются средства)
+        :param amount: Сумма векселя
+        :param due_date: Дата погашения
+        """
+        self.issuer = issuer  # Эмитент
+        self.payee = payee    # Получатель
+        self.amount = amount  # Сумма
+        self.due_date = due_date  # Дата погашения
+        self.issue_date = datetime.datetime.now()  # Дата выдачи
+        self.id = self.generate_id()  # Уникальный идентификатор векселя
+        self.is_paid = False  # Флаг оплаты
 
-There is extensive documentation about the [CodeQL language](https://codeql.github.com/docs/), writing CodeQL using the [CodeQL extension for Visual Studio Code](https://docs.github.com/en/code-security/codeql-for-vs-code/) and using the [CodeQL CLI](https://docs.github.com/en/code-security/codeql-cli).
+    def generate_id(self):
+        """
+        Генерация уникального идентификатора для векселя.
+        :return: Хэш как уникальный идентификатор
+        """
+        data = f"{self.issuer}{self.payee}{self.amount}{self.issue_date}"
+        return hashlib.sha256(data.encode()).hexdigest()
 
-## Contributing
+    def pay(self):
+        """
+        Пометка векселя как оплаченного.
+        """
+        if self.is_paid:
+            raise ValueError("Этот вексель уже был оплачен.")
+        if datetime.datetime.now() > self.due_date:
+            raise ValueError("Срок действия векселя истёк.")
+        self.is_paid = True
+        print(f"Вексель {self.id} оплачен.")
 
-We welcome contributions to our standard library and standard checks. Do you have an idea for a new check, or how to improve an existing query? Then please go ahead and open a pull request! Before you do, though, please take the time to read our [contributing guidelines](CONTRIBUTING.md). You can also consult our [style guides](https://github.com/github/codeql/tree/main/docs) to learn how to format your code for consistency and clarity, how to write query metadata, and how to write query help documentation for your query.
+    def __str__(self):
+        """
+        Переопределение строкового представления объекта.
+        :return: Строка с основными данными векселя
+        """
+        return (
+            f"Цифровой вексель:\n"
+            f"Эмитент: {self.issuer}\n"
+            f"Получатель: {self.payee}\n"
+            f"Сумма: {self.amount}\n"
+            f"Дата выдачи: {self.issue_date}\n"
+            f"Дата погашения: {self.due_date}\n"
+            f"ID: {self.id}\n"
+            f"Оплачен: {'Да' если self.is_paid else 'Нет'}"
+        )
 
-For information on contributing to CodeQL documentation, see the "[contributing guide](docs/codeql/CONTRIBUTING.md)" for docs.
 
-## License
+# Пример использования
+if name == "__main__":
+    # Создаём цифровой вексель
+    issuer = "ООО 'Эмитент'"
+    payee = "ООО 'Получатель'"
+    amount = 100000  # Сумма в рублях
+    due_date = datetime.datetime(2024, 12, 31)  # Дата погашения
 
-The code in this repository is licensed under the [MIT License](LICENSE) by [GitHub](https://github.com).
+    # Инициализация векселя
+    bill = DigitalBillOfExchange(issuer, payee, amount, due_date)
 
-The CodeQL CLI (including the CodeQL engine) is hosted in a [different repository](https://github.com/github/codeql-cli-binaries) and is [licensed separately](https://github.com/github/codeql-cli-binaries/blob/main/LICENSE.md). If you'd like to use the CodeQL CLI to analyze closed-source code, you will need a separate commercial license; please [contact us](https://github.com/enterprise/contact) for further help.
+    # Выводим информацию о векселе
+    print(bill)
 
-## Visual Studio Code integration
+    # Помечаем вексель как оплаченный
+    try:
+        bill.pay()
+    except ValueError as e:
+        print(e)
 
-If you use Visual Studio Code to work in this repository, there are a few integration features to make development easier.
-
-### CodeQL for Visual Studio Code
-
-You can install the [CodeQL for Visual Studio Code](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-codeql) extension to get syntax highlighting, IntelliSense, and code navigation for the QL language, as well as unit test support for testing CodeQL libraries and queries.
-
-### Tasks
-
-The `.vscode/tasks.json` file defines custom tasks specific to working in this repository. To invoke one of these tasks, select the `Terminal | Run Task...` menu option, and then select the desired task from the dropdown. You can also invoke the `Tasks: Run Task` command from the command palette.
+    # Проверяем обновлённый статус
+    print(bill)
